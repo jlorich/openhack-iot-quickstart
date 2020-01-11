@@ -1,0 +1,26 @@
+---
+
+- name: OpenHack Setup Playbook
+  hosts: all
+  vars:
+    iothub_hostname:
+    iothub_name:
+  tasks:
+    - name: Install Azure CLI
+      script: ./scripts/install_azure_cli.sh
+      become: yes
+      become_user: root
+      become_method: sudo
+    - name: Install dotnet core
+      script: ./scripts/install_dotnet_core.sh
+      become: yes
+      become_user: root
+      become_method: sudo
+    - name: Install simulated device
+      script: ./scripts/install_device.sh
+      become: yes
+      become_user: root
+      become_method: sudo
+      environment:
+        IOTHUB_HOSTNAME: "{{iothub_hostname}}"
+        IOTHUB_NAME: "{{iothub_name}}"

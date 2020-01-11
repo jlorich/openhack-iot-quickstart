@@ -8,7 +8,21 @@ resource "azurerm_public_ip" "factorymonitor_vm" {
   name                = "${var.name}-factorymonitor-vm-pip"
   location            = "${azurerm_resource_group.default.location}"
   resource_group_name = "${azurerm_resource_group.default.name}"
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
+}
+
+resource "azurerm_virtual_network" "default" {
+  name                = "${var.name}-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = "${azurerm_resource_group.default.location}"
+  resource_group_name = "${azurerm_resource_group.default.name}"
+}
+
+resource "azurerm_subnet" "default" {
+  name                 = "default"
+  resource_group_name  = "${azurerm_resource_group.default.name}"
+  virtual_network_name = "${azurerm_virtual_network.default.name}"
+  address_prefix       = "10.0.2.0/24"
 }
 
 # Nic for our Factory Monitor VM
@@ -21,6 +35,7 @@ resource "azurerm_network_interface" "factorymonitor_vm" {
         name                          = "testconfiguration1"
         public_ip_address_id          = "${azurerm_public_ip.factorymonitor_vm.id}"
         private_ip_address_allocation = "dynamic"
+        subnet_id                     = "${azurerm_subnet.default.id}"
     }
 }
 
@@ -52,14 +67,21 @@ resource "azurerm_virtual_machine" "factorymonitor" {
         admin_password = "${var.password}"
     }
 
-    dynamic "os_profile_linux_config" {
-        for_each = "${local.use_ssh}"
-        content {
-            disable_password_authentication = true
-            ssh_keys {
-                key_data = "${var.ssh_key}"
-                path = "/home/${var.username}/.ssh/authorized_keys"
-            }
-        }
+    os_profile_linux_config {
+        disable_password_authentication = false
+    }
+
+    identity {
+        type = "SystemAssigned"
     }
 }
+
+
+data "azurerm_subscription" "current" {}
+
+resource "azurerm_role_assignment" "default" {
+  scope                = "${data.azurerm_subscription.current.id}"
+  role_definition_name = "Contributor"
+  principal_id         = "${azurerm_virtual_machine.factorymonitor.identity[0].principal_id}"
+}
+

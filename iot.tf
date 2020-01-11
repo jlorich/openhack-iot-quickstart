@@ -1,5 +1,5 @@
 resource "azurerm_iothub" "default" {
-    name                = "test"
+    name                = "${var.name}-${var.environment}-iot"
     resource_group_name = "${azurerm_resource_group.default.name}"
     location            = "${azurerm_resource_group.default.location}"
 
