@@ -17,3 +17,11 @@ output "iothub_name" {
 output "iothub_hostname" {
   value = "${azurerm_iothub.default.hostname}"
 }
+
+output "resource_group_name" {
+  value = "${azurerm_resource_group.default.name}"
+}
+
+output "dps_name" {
+  value = "${azurerm_iothub_dps.default.name}"
+}

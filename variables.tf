@@ -10,6 +10,10 @@ variable "location" {
     default = "Central US"
 }
 
+variable "dps_location" {
+    default = "West US"
+}
+
 variable "iot_hub_sku" {
     default = "S1"
 }
